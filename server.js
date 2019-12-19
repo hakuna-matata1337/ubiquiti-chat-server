@@ -1,41 +1,67 @@
-const express = require('express');
+const io = require('socket.io')(2000);
+const users = [];
 
-const app = express();
-
-let nicknames = [];
-
-app.use((req, res, next) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Headers', '*');
-  res.set('Access-Control-Allow-Methods', '*');
-  console.log(`Method: ${req.method} | URL: ${req.url} | IP: ${req.ip}`);
-  next();
-});
-
-//TODO implement express router and the rest of the routes and sockets
-
-app.get('/users/:name', (req, res) => {
-  if (nicknames.includes(req.params.name)) {
-    return res.json({
-      error: 'This nickname is already is use. Please choose a different one.',
+const authorize = socket => users.find(user => user.id === socket.client.id);
+const setNickname = (nickname, socket) => {
+  if (authorize(socket)) {
+    socket.emit('notification', {
+      type: 'danger',
+      message: 'It looks like you already have a nickname? :]',
     });
   }
 
-  return res.json({ message: 'This nickname is free.' });
-});
-
-app.delete('/users/:name', (req, res) => {
-  if (!nicknames.find(name => name === req.params.name)) {
-    return res.json({
-      error: 'You are already logged out.',
+  if (
+    users.find(user => user.nickname.toLowerCase() === nickname.toLowerCase())
+  ) {
+    socket.emit('notification', {
+      type: 'danger',
+      message:
+        'This nickname has already been taken. Please choose another one.',
     });
   }
 
-  nicknames = nicknames.filter(name => name !== req.params.name);
+  users.push({
+    id: socket.client.id,
+    nickname,
+  });
 
-  return res.json({ message: 'Logged out successfully.' });
+  socket.emit('notification', {
+    type: 'success',
+    message: 'Nickname set to ' + nickname,
+  });
+};
+
+const userDisconnect = socket => {
+  const user = users.findIndex(user => user.id === socket.client.id);
+  if (user) {
+    users.splice(user, 1);
+
+    socket.emit('notification', {
+      type: 'success',
+      message: 'user disconnected, id ' + socket.client.id,
+    });
+  } else {
+    console.log('disc failed, id: ', socket.client.id);
+  }
+};
+
+const broadcastMessage = (message, socket) => {
+  socket.broadcast.emit('chat-message', message);
+
+  socket.emit('notification', {
+    type: 'danger',
+    message: 'It looks like you already have a nickname? :]',
+  });
+};
+
+io.on('connection', socket => {
+  //Object.keys(io.sockets.connected)
+  socket.emit('notification', {
+    type: 'success',
+    message: 'connection with id ' + socket.client.id,
+  });
+
+  socket.on('set-nickname', nickname => setNickname(nickname, socket));
+  socket.on('chat-message', message => broadcastMessage(message, socket));
+  socket.on('disconnect', () => userDisconnect(socket));
 });
-
-app.use('/', (_, res) => res.status(404).json({ error: 'Page not found' }));
-
-app.listen(4000, () => console.log('server listening on port 4000'));
