@@ -1,0 +1,25 @@
+{
+  "name": "ubiquiti-chat-server",
+  "version": "1.0.0",
+  "description": "ubiquiti chat server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hakuna-matata1337/ubiquiti-chat-server.git"
+  },
+  "author": "Emil Nikolov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hakuna-matata1337/ubiquiti-chat-server/issues"
+  },
+  "homepage": "https://github.com/hakuna-matata1337/ubiquiti-chat-server#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2"
+  }
+}
