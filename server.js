@@ -1,47 +1,40 @@
 const io = require('socket.io')(2000);
-const users = [];
+const usersList = [{ nickname: 'Admin', id: '1' }];
 
-const authorize = socket => users.find(user => user.id === socket.client.id);
+const userExists = nickname =>
+  usersList.find(
+    user => user.nickname.toLowerCase() === nickname.toLowerCase(),
+  );
+
 const setNickname = (nickname, socket) => {
-  if (authorize(socket)) {
-    socket.emit('notification', {
-      type: 'danger',
-      message: 'It looks like you already have a nickname? :]',
-    });
-  }
-
-  if (
-    users.find(user => user.nickname.toLowerCase() === nickname.toLowerCase())
-  ) {
-    socket.emit('notification', {
+  if (userExists(nickname)) {
+    return socket.emit('notification', {
       type: 'danger',
       message:
         'This nickname has already been taken. Please choose another one.',
     });
   }
 
-  users.push({
-    id: socket.client.id,
-    nickname,
-  });
+  usersList.push({ id: socket.id, nickname });
 
+  socket.emit('set-nickname', nickname);
   socket.emit('notification', {
     type: 'success',
-    message: 'Nickname set to ' + nickname,
+    message: `Welcome to the chat, ${nickname}! 🙂`,
   });
 };
 
-const userDisconnect = socket => {
-  const user = users.findIndex(user => user.id === socket.client.id);
-  if (user) {
-    users.splice(user, 1);
+const userDisconnect = (nickname, socket) => {
+  const userIndex = usersList.findIndex(user => user.id === socket.client.id);
+  if (userIndex !== -1) {
+    usersList.splice(userIndex, 1);
 
     socket.emit('notification', {
       type: 'success',
-      message: 'user disconnected, id ' + socket.client.id,
+      message: `You have been successfully disconnected, ${nickname}`,
     });
   } else {
-    console.log('disc failed, id: ', socket.client.id);
+    console.log('disc failed, id: ', socket.client.id, usersList[userIndex]);
   }
 };
 
@@ -49,12 +42,13 @@ const broadcastMessage = (message, socket) => {
   socket.broadcast.emit('chat-message', message);
 
   socket.emit('notification', {
-    type: 'danger',
-    message: 'It looks like you already have a nickname? :]',
+    type: 'success',
+    message: 'message sent: ' + message,
   });
 };
 
 io.on('connection', socket => {
+  console.log('connection established');
   //Object.keys(io.sockets.connected)
   socket.emit('notification', {
     type: 'success',
@@ -63,5 +57,5 @@ io.on('connection', socket => {
 
   socket.on('set-nickname', nickname => setNickname(nickname, socket));
   socket.on('chat-message', message => broadcastMessage(message, socket));
-  socket.on('disconnect', () => userDisconnect(socket));
+  socket.on('disconnect', nickname => userDisconnect(nickname, socket));
 });
