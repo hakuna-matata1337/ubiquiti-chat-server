@@ -1,3 +1,4 @@
+const log = require('../tools/Logger');
 const config = require('../config.json');
 const findNickname = require('../actions/findNickname');
 
@@ -17,7 +18,7 @@ module.exports = (nickname, socket, io) => {
       return false;
     }
 
-    if (/[^a-z0-9-_.@!]/gi.test(nickname)) {
+    if (!/^[a-z0-9-_.@! ]+$/gi.test(nickname)) {
       socket.emit('notification', {
         type: 'danger',
         message: 'Please use only letters, digits and - _ . @ !',
@@ -38,7 +39,7 @@ module.exports = (nickname, socket, io) => {
 
     return true;
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
     return false;
   }
 };

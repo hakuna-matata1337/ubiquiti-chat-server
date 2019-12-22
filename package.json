@@ -19,7 +19,10 @@
   },
   "homepage": "https://github.com/hakuna-matata1337/ubiquiti-chat-server#readme",
   "dependencies": {
-    "nodemon": "^2.0.2",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
   }
 }

@@ -1,3 +1,5 @@
+const log = require('../tools/Logger');
+
 // Returns an array with all connected sockets with a nickname
 
 module.exports = io => {
@@ -10,6 +12,6 @@ module.exports = io => {
       }))
       .filter(user => user.nickname);
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
   }
 };

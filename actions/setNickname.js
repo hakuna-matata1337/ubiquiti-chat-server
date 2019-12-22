@@ -1,3 +1,4 @@
+const log = require('../tools/Logger');
 const config = require('../config.json');
 const getAllConnections = require('./getAllConnections');
 const disconnectUser = require('./disconnectUser');
@@ -18,7 +19,15 @@ module.exports = (nickname, socket, io) => {
         session: config.disconnect.inactivity,
       });
 
-      socket.broadcast.emit('new user join', { nickname, time: socket.time });
+      // Broadcast to all users with nicknames
+      getAllConnections(io)
+        .filter(user => user.nickname !== socket.nickname)
+        .forEach(user => {
+          io.sockets.sockets[user.id].emit('new user join', {
+            nickname,
+            time: socket.time,
+          });
+        });
 
       socket.emit(
         'users list',
@@ -29,7 +38,7 @@ module.exports = (nickname, socket, io) => {
       );
 
       const interval = setInterval(() => {
-        if (socket.session <= 0) {
+        if (socket.session <= 0 || isNaN(socket.session)) {
           clearInterval(interval);
           disconnectUser(socket, io, 'inactivity');
         } else {
@@ -38,6 +47,6 @@ module.exports = (nickname, socket, io) => {
       }, 1000);
     }
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
   }
 };

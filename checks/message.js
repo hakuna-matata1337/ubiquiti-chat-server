@@ -1,3 +1,4 @@
+const log = require('../tools/Logger');
 const config = require('../config.json');
 
 // All checks required before sending a new message
@@ -7,7 +8,7 @@ module.exports = (message, socket) => {
     if (!socket.nickname) {
       socket.emit('notification', {
         type: 'danger',
-        message: 'You must choose nickname before you can post messages.',
+        message: 'You must choose a nickname before you can post messages.',
       });
 
       socket.emit('disconnect user');
@@ -15,24 +16,23 @@ module.exports = (message, socket) => {
       return false;
     }
 
-    const sinceLastMessage = Date.now() - socket.lastMessage;
+    const sinceLastMessage = (Date.now() - socket.lastMessage) / 1000;
 
     if (sinceLastMessage < config.message.timeout) {
       socket.emit('notification', {
         type: 'danger',
         message: `You can send a new message in ${(
-          (config.message.timeout - sinceLastMessage) /
-          1000
-        ).toFixed(2)} seconds.`,
+          config.message.timeout - sinceLastMessage
+        ).toFixed(2)} sec.`,
       });
 
       return false;
     }
 
-    if (!/[^><]/gi.test(message)) {
+    if (/[<>'"]/m.test(message)) {
       socket.emit('notification', {
         type: 'danger',
-        message: 'You are not allowed to use ">" and "<" in messages.',
+        message: 'You are not allowed to use ">", "<" and quotes in messages.',
       });
 
       return false;
@@ -52,7 +52,7 @@ module.exports = (message, socket) => {
 
     return true;
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
     return false;
   }
 };

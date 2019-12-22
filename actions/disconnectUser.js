@@ -1,3 +1,4 @@
+const log = require('../tools/Logger');
 const getAllConnections = require('./getAllConnections');
 
 // Disconnects a user and emits corresponding events
@@ -5,6 +6,7 @@ const getAllConnections = require('./getAllConnections');
 module.exports = (socket, io, type) => {
   try {
     if (socket.nickname) {
+      // Broadcast to all users with nicknames
       getAllConnections(io)
         .filter(user => user.nickname !== socket.nickname)
         .forEach(user => {
@@ -23,6 +25,6 @@ module.exports = (socket, io, type) => {
       delete socket.session;
     }
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
   }
 };

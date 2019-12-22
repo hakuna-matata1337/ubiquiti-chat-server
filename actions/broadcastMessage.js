@@ -1,3 +1,4 @@
+const log = require('../tools/Logger');
 const config = require('../config.json');
 const messageChecks = require('../checks/message');
 
@@ -18,6 +19,6 @@ module.exports = (message, socket, io) => {
       });
     }
   } catch (error) {
-    console.log('error ', error.message);
+    log.error(`${error.name}: ${error.message} in => ${__filename}`);
   }
 };
