@@ -1,0 +1,14 @@
+{
+  "message": {
+    "timeout": 5000,
+    "minLength": 1,
+    "maxLength": 500
+  },
+  "nickname": {
+    "minLength": 2,
+    "maxLength": 15
+  },
+  "disconnect": {
+    "inactivity": 30
+  }
+}
