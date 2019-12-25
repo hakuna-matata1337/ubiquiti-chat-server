@@ -1,6 +1,7 @@
 const log = require('../tools/Logger');
 const config = require('../config.json');
 const messageChecks = require('../checks/message');
+const getAllConnections = require('./getAllConnections');
 
 // Emits a global message to all users
 
@@ -12,10 +13,12 @@ module.exports = (message, socket, io) => {
 
       socket.emit('session update', config.disconnect.inactivity);
 
-      io.emit('global message', {
-        text: message,
-        nickname: socket.nickname,
-        time: socket.lastMessage,
+      getAllConnections(io).forEach(user => {
+        io.sockets.sockets[user.id].emit('global message', {
+          text: message,
+          nickname: socket.nickname,
+          time: socket.lastMessage,
+        });
       });
     }
   } catch (error) {
