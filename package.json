@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/hakuna-matata1337/ubiquiti-chat-server#readme",
   "dependencies": {
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.5.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
